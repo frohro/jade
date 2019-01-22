@@ -439,6 +439,16 @@ jade_defs.cktsim = function(jade) {
             case 'opamp':
                 this.opamp(connections.nplus, connections.nminus, connections.output, connections.gnd, properties.A, name);
                 break;
+            case 'tl':
+                this.tline(connections[0],connections[1],connections[2],connections[3],properties['Z0'],properties['Delay'],properties['Rwire'],name); // This appears to have changed in the JSON.  Rob
+                break;
+            case 'twoport':
+                this.twoport(connections[0],connections[1],connections[2],connections[3],properties['A11'],properties['A12'],properties['A21'],properties['A22'],properties['B11'],properties['B12'],properties['B21'],properties['B22'],name);
+                break;
+            case 'npn' :
+				this.nBJT(connections[0],connections[1],connections[2],properties['area'],properties['Ics'],properties['Ies'],properties['alphaF'],properties['alphaR'],name);
+            case 'pnp' :
+				this.pBJT(connections[0],connections[1],connections[2],properties['area'],properties['Ics'],properties['Ies'],properties['alphaF'],properties['alphaR'],name);
             case 'nfet':
                 this.n(connections.d, connections.g, connections.s, properties.W, properties.L, name);
                 break;
@@ -1114,7 +1124,121 @@ jade_defs.cktsim = function(jade) {
         var d = new Opamp(np, nn, no, ng, branch, A, name);
         return this.add_device(d, name);
     };
+        Circuit.prototype.twoport = function(n1p,n1m,n2p,n2m,A11,A12,A21,A22,B11,B12,B21,B22,name) {
 
+	    // try to convert string value into numeric value, barf if we can't
+	    if ((typeof A11) == 'string') {
+		A11 = parse_number_alert(A11);
+		if (A11 === undefined) return undefined;
+	    }
+	    if ((typeof A12) == 'string') {
+		A12 = parse_number_alert(A12);
+		if (A12 === undefined) return undefined;
+	    }
+	    if ((typeof A21) == 'string') {
+		A21 = parse_number_alert(A21);
+		if (A21 === undefined) return undefined;
+	    }
+	    if ((typeof A22) == 'string') {
+		A22 = parse_number_alert(A22);
+		if (A22 === undefined) return undefined;
+	    }
+
+	    if ((typeof B11) == 'string') {
+		B11 = parse_number_alert(B11);
+		if (B11 === undefined) return undefined;
+	    }
+	    if ((typeof B12) == 'string') {
+		B12 = parse_number_alert(B12);
+		if (B12 === undefined) return undefined;
+	    }
+	    if ((typeof B21) == 'string') {
+		B21 = parse_number_alert(B21);
+		if (B21 === undefined) return undefined;
+	    }
+	    if ((typeof B22) == 'string') {
+		B22 = parse_number_alert(B22);
+		if (B22 === undefined) return undefined;
+	    }
+
+	    var ni1 = this.node(undefined,T_CURRENT);
+	    var ni2 = this.node(undefined,T_CURRENT);
+	    var d = new Twoport(n1p,n1m,n2p,n2m,ni1,ni2,A11,A12,A21,A22,B11,B12,B21,B22,name);
+	    return this.add_device(d, name);
+	}
+
+
+        Circuit.prototype.tline = function(n1p,n1m,n2p,n2m,Z0,Delay,Rw,name) {
+	    // try to convert string value into numeric value, barf if we can't
+	    if ((typeof Z0) == 'string') {
+		z0 = parse_number_alert(Z0);
+		if (z0 === undefined) return undefined;
+	    }
+	    if ((typeof Delay) == 'string') {
+		tD = parse_number_alert(Delay);
+		if (tD === undefined) return undefined;
+	    }
+	    if ((typeof Delay) == 'string') {
+		Rw = parse_number_alert(Rw);
+		if (Rw === undefined) return undefined;
+	    }
+	    var ni1to2 = this.node(undefined,T_CURRENT);
+	    var ni2to1 = this.node(undefined,T_CURRENT);
+	    var d = new Tline(n1p,n1m,n2p,n2m,ni1to2,ni2to1,z0,tD,Rw,name);
+	    return this.add_device(d, name);
+	}
+
+        Circuit.prototype.nBJT = function(c,b,e,area,Ics,Ies,alphaF,alphaR,name) {
+	    // try to convert string value into numeric value, barf if we can't
+	    if ((typeof area) == 'string') {
+		area = parse_number_alert(area);
+		if (area === undefined) return undefined;
+	    }
+	    if ((typeof Ics) == 'string') {
+		Ics = parse_number_alert(Ics);
+		if (Ics === undefined) return undefined;
+	    }
+	    if ((typeof Ies) == 'string') {
+		Ies = parse_number_alert(Ies);
+		if (Ies === undefined) return undefined;
+	    }
+	    if ((typeof alphaF) == 'string') {
+		alphaF = parse_number_alert(alphaF);
+		if (alphaF === undefined) return undefined;
+	    }
+	    if ((typeof alphaR) == 'string') {
+		alphaR = parse_number_alert(alphaR);
+		if (alphaR === undefined) return undefined;
+	    }
+	    var d = new bjt(c,b,e,area,Ics,Ies,alphaF,alphaR,name,'n');
+	    return this.add_device(d, name);
+	}
+
+        Circuit.prototype.pBJT = function(c,b,e,area,Ics,Ies,alphaF,alphaR,name) {
+	    // try to convert string value into numeric value, barf if we can't
+	    if ((typeof area) == 'string') {
+		area = parse_number_alert(area);
+		if (area === undefined) return undefined;
+	    }
+	    if ((typeof Ics) == 'string') {
+		Ics = parse_number_alert(Ics);
+		if (Ics === undefined) return undefined;
+	    }
+	    if ((typeof Ies) == 'string') {
+		Ies = parse_number_alert(Ies);
+		if (Ies === undefined) return undefined;
+	    }
+	    if ((typeof alphaF) == 'string') {
+		alphaF = parse_number_alert(alphaF);
+		if (alphaF === undefined) return undefined;
+	    }
+	    if ((typeof alphaR) == 'string') {
+		alphaR = parse_number_alert(alphaR);
+		if (alphaR === undefined) return undefined;
+	    }
+	    var d = new bjt(c,b,e,area,Ics,Ies,alphaF,alphaR,name,'p');
+	    return this.add_device(d, name);
+	}
     Circuit.prototype.n = function(d, g, s, W, L, name) {
         var f = new Fet(d, g, s, W, L, name, 'n');
         return this.add_device(f, name);
@@ -1811,6 +1935,258 @@ jade_defs.cktsim = function(jade) {
     Opamp.prototype.load_ac = function(ckt) {};
 
     Opamp.prototype.load_tran = function(ckt) {};
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	//  Two Port: A * I = B * V
+	//
+	///////////////////////////////////////////////////////////////////////////////
+
+
+        function Twoport(n1p,n1m,n2p,n2m,ni1,ni2,A11,A12,A21,A22,B11,B12,B21,B22,name) {
+
+	    Device.call(this);
+	    this.n1p = n1p;
+	    this.n1m = n1m;
+	    this.n2p = n2p;
+	    this.n2m = n2m;
+	    this.ni1 = ni1;
+	    this.ni2 = ni2;
+
+	    this.A11 = A11;
+	    this.A12 = A12;
+	    this.A21 = A21;
+	    this.A22 = A22;
+
+	    this.B11 = B11;
+	    this.B12 = B12;
+	    this.B21 = B21;
+	    this.B22 = B22;
+
+	    this.name = name;
+	}
+
+	Twoport.prototype = new Device();
+        Twoport.prototype.constructor = Twoport;
+        
+        Twoport.prototype.load_linear = function(ckt) {
+            // MNA stamp Port1: A11*i1 + A12*i2 = B11*v1 + B12*v2
+            // MNA stamp Port2: A21*i1 + A22*i2 = B21*v1 + B22*v2
+
+	    //Port 1
+	    ckt.add_to_Gl(this.n1p,this.ni1,-1.0);
+	    ckt.add_to_Gl(this.n1m,this.ni1,1.0);
+	    ckt.add_to_Gl(this.ni1,this.ni1,this.A11);
+	    ckt.add_to_Gl(this.ni1,this.ni2,this.A12);
+	    ckt.add_to_Gl(this.ni1,this.n1p,this.B11);
+	    ckt.add_to_Gl(this.ni1,this.n1m,-this.B11);
+	    ckt.add_to_Gl(this.ni1,this.n2p,this.B12);
+	    ckt.add_to_Gl(this.ni1,this.n2m,-this.B12);
+
+	    //Port 2
+	    ckt.add_to_Gl(this.n2p,this.ni2,-1.0);
+	    ckt.add_to_Gl(this.n2m,this.ni2,1.0);
+	    ckt.add_to_Gl(this.ni2,this.ni2,this.A22);
+	    ckt.add_to_Gl(this.ni2,this.ni1,this.A21);
+	    ckt.add_to_Gl(this.ni2,this.n1p,this.B21);
+	    ckt.add_to_Gl(this.ni2,this.n1m,-this.B21);
+	    ckt.add_to_Gl(this.ni2,this.n2p,this.B22);
+	    ckt.add_to_Gl(this.ni2,this.n2m,-this.B22);
+	}
+
+	Twoport.prototype.load_dc = function(ckt,soln,rhs) {
+	}
+
+	Twoport.prototype.load_ac = function(ckt) {
+	}
+
+	Twoport.prototype.load_tran = function(ckt,soln,crnt,q,tNow) {
+	}
+
+
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	//  Transmission Line
+	//
+	///////////////////////////////////////////////////////////////////////////////
+
+        function Tline(n1p,n1m,n2p,n2m,ni1to2,ni2to1,z0,tD,Rwire,name) {
+	    Device.call(this);
+	    this.n1p = n1p;
+	    this.n1m = n1m;
+	    this.n2p = n2p;
+	    this.n2m = n2m;
+	    this.ni1to2 = ni1to2;
+	    this.ni2to1 = ni2to1;
+	    this.indTback = 0;
+	    this.z0 = z0;
+	    this.tD = tD;
+	    this.Rwire = Rwire;
+	    this.name = name;
+	}
+
+
+	Tline.prototype = new Device();
+        Tline.prototype.constructor = Tline;
+        
+        Tline.prototype.load_linear = function(ckt) {
+            // MNA stamp Port1: i1 = Y0*(v(n1p) - v(n1m)) - i2to1(t-tD)
+            // MNA stamp Port2: i2 = Y0*(v(n2p) - v(n2m)) - i1to2(t-tD)
+            // MNA stamp branch1: i1to2 = 2*Y0*(v(n1p) - v(n1m)) - i2to1(t-tD)
+            // MNA stamp branch2: i2to1 = 2*Y0*(v(n2p) - v(n2m)) - i1to2(t-tD)
+	    var Y0 = 1.0/this.z0;
+
+	    //Port 1
+	    ckt.add_conductance_l(this.n1p,this.n1m,Y0);
+	    ckt.add_to_Gl(this.ni1to2,this.ni1to2,1.0);
+	    ckt.add_to_Gl(this.ni1to2,this.n1p,2*Y0);
+	    ckt.add_to_Gl(this.ni1to2,this.n1m,-2*Y0);
+
+	    //Port 2
+	    ckt.add_conductance_l(this.n2p,this.n2m,Y0);
+	    ckt.add_to_Gl(this.ni2to1,this.ni2to1,1.0);
+	    ckt.add_to_Gl(this.ni2to1,this.n2p,2*Y0);
+	    ckt.add_to_Gl(this.ni2to1,this.n2m,-2*Y0);
+
+	    //Conductance of tline wire.
+	    ckt.add_conductance_l(this.n1m,this.n2m,1.0/this.Rwire);
+	}
+
+        Tline.prototype.load_gen = function(ckt,rhs,D,i2to1,i1to2) {
+	    // Load transfer for line.
+	    ckt.add_to_rhs(this.n1p,-i2to1,rhs);  // no delay
+	    ckt.add_to_rhs(this.n1m,i2to1,rhs);  // no delay
+	    ckt.add_to_rhs(this.ni1to2,-i2to1,rhs);
+	    ckt.add_to_G(this.n1p,this.ni2to1,D);
+	    ckt.add_to_G(this.n1m,this.ni2to1,-D);
+	    ckt.add_to_G(this.ni1to2,this.ni2to1,D);
+	    
+	    ckt.add_to_rhs(this.n2p,-i1to2,rhs);  // no delay
+	    ckt.add_to_rhs(this.n2m,i1to2,rhs);  // no delay
+	    ckt.add_to_rhs(this.ni2to1,-i1to2,rhs);
+	    ckt.add_to_G(this.n2p,this.ni1to2,D);
+	    ckt.add_to_G(this.n2m,this.ni1to2,-D);
+	    ckt.add_to_G(this.ni2to1,this.ni1to2,D);
+	}
+
+	Tline.prototype.load_dc = function(ckt,soln,rhs) {
+	    // Transmission line dc, no delay.
+	    var D = 1.0;
+	    var i2to1 = D*soln[this.ni2to1]; 
+	    var i1to2 = D*soln[this.ni1to2]; 
+            this.load_gen(ckt,rhs,D,i2to1,i1to2);
+	}
+
+	Tline.prototype.load_ac = function(ckt) {
+	}
+
+	Tline.prototype.load_tran = function(ckt,soln,crnt,q,tNow) {
+
+	    var times = ckt.responses[ckt.N];
+	    var i2to1t = ckt.responses[this.ni2to1];
+	    var i1to2t = ckt.responses[this.ni1to2];
+	    var tBack = tNow - this.tD;
+
+	    var i2to1 = soln[this.ni2to1]; 
+	    var i1to2 = soln[this.ni1to2]; 
+	    var D = 0.0;  // Derivative with respect to solution
+	    
+	    if (times.length > 0) {
+		if (tBack < times[0]) {  // tBack before start.
+		    i2to1 = i2to1t[0]; 
+		    i1to2 = i1to2t[0]; 
+		} else {  // Interpolate at tBack.
+		    var tPrev = times[times.length-1];
+		    if (tBack > tPrev) {  // back time after last step
+			var ca = (tBack - tPrev)/(tNow - tPrev);
+			i2to1 = ca*i2to1 + (1-ca)*i2to1t[i2to1t.length-1];
+			i1to2 = ca*i1to2 + (1-ca)*i1to2t[i1to2t.length-1];
+			D = ca;
+		    } else { // back time before last step, deriv = 0;
+			var ind = this.indTback;  // Cached index
+			if (times[ind] > tBack) {
+			    for (ind--; times[ind] > tBack; ind--);
+			} else {
+			    for (; times[ind+1] < tBack; ind++);
+			}
+			this.indTback = ind;
+			tPrev = times[ind];
+			var ca = (tBack-tPrev)/(times[ind+1] -  tPrev);
+			i2to1 = ca*i2to1t[ind+1] + (1-ca)*i2to1t[ind];
+			i1to2 = ca*i1to2t[ind+1] + (1-ca)*i1to2t[ind];
+		    } 
+		}
+	    }
+            this.load_gen(ckt,crnt,D,i2to1,i1to2);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	//  Very basic Ebers-Moll BJT model
+	//
+	///////////////////////////////////////////////////////////////////////////////
+
+
+        function bjt(c,b,e,area,Ics,Ies,af,ar,name,type) {
+	    Device.call(this);
+	    this.e = e;
+	    this.b = b;
+	    this.c = c;
+	    this.name = name;
+	    this.af = af;
+	    this.ar = ar;
+	    this.area = area;
+	    this.aIcs = this.area*Ics;
+            this.aIes = this.area*Ies;
+	    if (type != 'n' && type != 'p')
+	    { throw 'BJT type is not npn or pnp';
+	    }
+	    this.type_sign = (type == 'n') ? 1 : -1;
+	    this.vt = 0.026
+	    this.leakCond = 1.0e-12;
+	}
+	bjt.prototype = new Device();
+        bjt.prototype.constructor = bjt;
+
+        bjt.prototype.load_linear = function(ckt) {
+	    // bjt's are nonlinear, just like javascript progammers
+	}
+
+
+        bjt.prototype.load_dc = function(ckt,soln,rhs) {
+	    e = this.e; b = this.b; c = this.c;
+	    var vbc = this.type_sign * ckt.get_two_terminal(b, c, soln);
+	    var vbe = this.type_sign * ckt.get_two_terminal(b, e, soln);
+            var IrGr = diodeEval(vbc, this.vt, this.aIcs);
+            var IfGf = diodeEval(vbe, this.vt, this.aIes);
+            // Sign convention is emitter and collector currents are leaving.
+            ie = this.type_sign * (IfGf[0] - this.ar*IrGr[0]);
+            ic = this.type_sign * (IrGr[0] - this.af*IfGf[0]);
+            ib = -(ie+ic);  // Current flowing out of base
+	    ckt.add_to_rhs(b,ib,rhs);  //current flowing out of base
+	    ckt.add_to_rhs(c,ic,rhs);  //current flows out of the collector
+	    ckt.add_to_rhs(e,ie,rhs);   // and out the emitter
+	    ckt.add_conductance(b,e,IfGf[1]);
+	    ckt.add_conductance(b,c,IrGr[1]);
+	    ckt.add_conductance(c,e,this.leakCond);
+
+	    ckt.add_to_G(b, c, this.ar*IrGr[1]);
+	    ckt.add_to_G(b, e, this.af*IfGf[1]);	    
+	    ckt.add_to_G(b, b, -(this.af*IfGf[1] + this.ar*IrGr[1]));
+	    
+	    ckt.add_to_G(e, b, this.ar*IrGr[1]);
+	    ckt.add_to_G(e, c, -this.ar*IrGr[1]);
+	    
+	    ckt.add_to_G(c, b, this.af*IfGf[1]);
+	    ckt.add_to_G(c, e, -this.af*IfGf[1]);
+	}
+
+        bjt.prototype.load_tran = function(ckt,soln,crnt,chg,time) {
+	    this.load_dc(ckt,soln,crnt,crnt);
+	}
+
+	bjt.prototype.load_ac = function(ckt) {
+	}
+
 
     ///////////////////////////////////////////////////////////////////////////////
     //
